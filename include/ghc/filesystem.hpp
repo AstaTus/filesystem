@@ -3898,6 +3898,15 @@ GHC_INLINE bool create_directories(const path& p)
 
 GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
 {
+#ifdef GHC_OS_ANDROID
+    std::error_code tec;
+    bool didCreate = false;
+    auto fs = status(p, tec);
+    if (access(p.c_str(), F_OK) != 0) {
+        didCreate = (mkdir(p.c_str(), 0777) == 0);
+    }
+    return didCreate;
+#else
     path current;
     ec.clear();
     bool didCreate = false;
@@ -3933,6 +3942,7 @@ GHC_INLINE bool create_directories(const path& p, std::error_code& ec) noexcept
 #endif
     }
     return didCreate;
+#endif
 }
 
 #ifdef GHC_WITH_EXCEPTIONS
